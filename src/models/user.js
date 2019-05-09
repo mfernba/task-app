@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -15,6 +16,7 @@ const userSchema = new mongoose.Schema({
     },
     email: {
         type: String,
+        unique: true,
         required: true,
         trim: true,
         lowercase: true,
@@ -47,7 +49,51 @@ const userSchema = new mongoose.Schema({
 
         }
     },
+    tokens: [{
+        token: {
+            type: String,
+            required: true
+        }
+    }]
 });
+
+userSchema.statics.findByCredentials = async function ( email, password ) {
+
+    const user = await User.findOne( { email } );
+
+    if ( !user ) {
+
+        throw new Error( 'unable to log in' );
+
+    } else {
+
+        const isMatch = await bcrypt.compare( password, user.password );
+
+        if ( !isMatch ) {
+
+            throw new Error( 'unable to log in' );
+
+        }
+
+        return user;
+
+    }
+};
+
+userSchema.methods.generateAuthToken = async function() {
+
+    const user = this;
+    const secretTokenPhrase = 'thisismynewcourse';
+    const token = jwt.sign( { _id: user._id.toString() }, secretTokenPhrase, { expiresIn: '1 day' } );
+
+    user.tokens = user.tokens.concat( { token } );
+    await user.save();
+
+    return token;
+
+};
+
+// Hash the plain text password before saving...
 
 userSchema.pre('save', async function ( next ) {
 

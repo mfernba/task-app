@@ -1,17 +1,19 @@
 const express = require('express');
 const User = require('../models/user');
+const auth = require('../middleware/auth');
 
 const router = new express.Router();
 
 router.post( '/users', async (req, resp) => {
 
-    const user = new User( req.body );
-
     try
     {
-        
+        const user = new User( req.body );
         await user.save();
-        resp.status( 201 ).send( user );
+
+        const token = await user.generateAuthToken();
+
+        resp.status( 201 ).send( { user, token } );
 
     } catch ( e ) {
 
@@ -21,22 +23,32 @@ router.post( '/users', async (req, resp) => {
 
 });
 
-router.get( '/users', async (req, resp) => {
+router.post( '/users/login', async (req, resp) => {
 
-    try {
+    try
+    {
+        const { email, password } = req.body;
 
-        const users = await User.find({});
-        resp.status( 200 ).send( users );
+        const user = await User.findByCredentials( email, password );
+        const token = await user.generateAuthToken();
+
+        resp.send( { user, token } );
 
     } catch ( e ) {
 
-        resp.status( 500 ).send( e );
+        resp.status( 400 ).send( e );
 
     }
 
 });
 
-router.get( '/users/:id', async (req, resp) => {
+router.get( '/users/me', auth, async (req, resp) => {
+
+    resp.status( 200 ).send( req.user );
+
+});
+
+router.get( '/users/:id', auth, async (req, resp) => {
 
     try {
 
@@ -60,7 +72,7 @@ router.get( '/users/:id', async (req, resp) => {
 
 });
 
-router.patch( '/users/:id', async ( req, resp ) => {
+router.patch( '/users/:id', auth, async ( req, resp ) => {
 
     try {
 
@@ -100,7 +112,7 @@ router.patch( '/users/:id', async ( req, resp ) => {
 
 });
 
-router.delete( '/users/:id', async ( req, resp ) => {
+router.delete( '/users/:id', auth, async ( req, resp ) => {
 
     try {
 
