@@ -1,5 +1,5 @@
 const express = require('express');
-const User = require("../models/user");
+const User = require('../models/user');
 
 const router = new express.Router();
 
@@ -9,6 +9,7 @@ router.post( '/users', async (req, resp) => {
 
     try
     {
+        
         await user.save();
         resp.status( 201 ).send( user );
 
@@ -73,7 +74,11 @@ router.patch( '/users/:id', async ( req, resp ) => {
 
         } else {
 
-            const user = await User.findByIdAndUpdate( { _id: req.params.id }, req.body, { new: true, runValidators: true } );
+            const user = await User.findById( { _id: req.params.id } );
+            updates.forEach( (el) => user[ el ] = req.body[ el ] );
+            await user.save();
+
+            //const user = await User.findByIdAndUpdate( { _id: req.params.id }, req.body, { new: true, runValidators: true } );
 
             if ( !user ) {
 
