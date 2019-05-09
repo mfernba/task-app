@@ -64,39 +64,43 @@ app.get( '/users/:id', async (req, resp) => {
 
 });
 
-app.post( '/tasks', (req, resp) => {
+app.post( '/tasks', async (req, resp) => {
 
-    const task = new Task( req.body );
+    try {
 
-    task.save().then( ( task ) => {
+        const task = new Task( req.body );
 
+        await task.save();
         resp.status( 201 ).send( task );
 
-    }).catch( ( error ) => {
+    } catch ( e ) {
 
-        resp.status( 400 ).send( error );
+        resp.status( 400 ).send( e );
 
-    });
+    }
 
 });
 
-app.get( '/tasks', (req, resp) => {
+app.get( '/tasks', async (req, resp) => {
 
-    Task.find({}).then( ( task ) => {
+    try {
 
+        const tasks = await Task.find({});
         resp.status( 200 ).send( task );
 
-    }).catch( ( error ) => {
+    } catch ( e ) {
 
-        resp.status( 500 ).send( error );
+        resp.status( 500 ).send( e );
 
-    });
+    }
 
 });
 
-app.get( '/tasks/:id', (req, resp) => {
+app.get( '/tasks/:id', async (req, resp) => {
 
-    Task.findById( req.params.id ).then( ( task ) => {
+    try {
+
+        const task = await Task.findById( req.params.id );
 
         if ( !task ) {
 
@@ -108,11 +112,11 @@ app.get( '/tasks/:id', (req, resp) => {
 
         }
 
-    }).catch( ( error ) => {
+    } catch ( e ) {
 
-        resp.status( 500 ).send( error );
+        resp.status( 500 ).send( e );
 
-    });
+    }
 
 });
 
