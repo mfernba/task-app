@@ -100,6 +100,30 @@ app.patch( '/users/:id', async ( req, resp ) => {
 
 });
 
+app.delete( '/users/:id', async ( req, resp ) => {
+
+    try {
+
+        const user = await User.findByIdAndDelete( { _id: req.params.id });
+
+        if ( !user ) {
+
+            resp.status( 404 ).send();
+
+        } else {
+
+            resp.status( 200 ).send( user );
+
+        }
+
+    } catch ( e ) {
+
+        resp.status( 500 ).send( e );
+
+    }
+
+});
+
 app.post( '/tasks', async (req, resp) => {
 
     try {
@@ -172,6 +196,30 @@ app.patch( '/tasks/:id', async ( req, resp ) => {
     try {
 
         const task = await Task.findByIdAndUpdate( { _id: req.params.id }, req.body, { new: true, runValidators: true } );
+
+        if ( !task ) {
+
+            resp.status( 404 ).send();
+
+        } else {
+
+            resp.status( 200 ).send( task );
+
+        }
+
+    } catch ( e ) {
+
+        resp.status( 500 ).send( e );
+
+    }
+
+});
+
+app.delete( '/tasks/:id', async ( req, resp ) => {
+
+    try {
+
+        const task = await Task.findByIdAndDelete( { _id: req.params.id });
 
         if ( !task ) {
 
