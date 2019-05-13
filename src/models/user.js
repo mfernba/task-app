@@ -93,6 +93,18 @@ userSchema.methods.generateAuthToken = async function() {
 
 };
 
+userSchema.methods.toJSON = function () { // Method use to hide data when converted to output to client...
+
+    const user = this;
+    const userObject = user.toObject();
+
+    delete userObject.password;
+    delete userObject.tokens;
+
+    return userObject;
+
+};
+
 // Hash the plain text password before saving...
 
 userSchema.pre('save', async function ( next ) {

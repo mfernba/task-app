@@ -82,31 +82,7 @@ router.get( '/users/me', auth, async (req, resp) => {
 
 });
 
-router.get( '/users/:id', auth, async (req, resp) => {
-
-    try {
-
-        const user = await User.findById( req.params.id );
-
-        if ( !user ) {
-
-            resp.status( 404 ).send();
-
-        } else {
-
-            resp.status( 200 ).send( user );
-
-        }
-
-    } catch ( e ) {
-
-        resp.status( 500 ).send( e );
-
-    }
-
-});
-
-router.patch( '/users/:id', auth, async ( req, resp ) => {
+router.patch( '/users/me', auth, async ( req, resp ) => {
 
     try {
 
@@ -120,21 +96,10 @@ router.patch( '/users/:id', auth, async ( req, resp ) => {
 
         } else {
 
-            const user = await User.findById( { _id: req.params.id } );
-            updates.forEach( (el) => user[ el ] = req.body[ el ] );
-            await user.save();
+            updates.forEach( (el) => req.user[ el ] = req.body[ el ] );
+            await req.user.save();
 
-            //const user = await User.findByIdAndUpdate( { _id: req.params.id }, req.body, { new: true, runValidators: true } );
-
-            if ( !user ) {
-
-                resp.status( 404 ).send();
-
-            } else {
-
-                resp.status( 200 ).send( user );
-
-            }
+           resp.status( 200 ).send( req.user );
 
         }
 
@@ -146,21 +111,12 @@ router.patch( '/users/:id', auth, async ( req, resp ) => {
 
 });
 
-router.delete( '/users/:id', auth, async ( req, resp ) => {
+router.delete( '/users/me', auth, async ( req, resp ) => {
 
     try {
 
-        const user = await User.findByIdAndDelete( { _id: req.params.id });
-
-        if ( !user ) {
-
-            resp.status( 404 ).send();
-
-        } else {
-
-            resp.status( 200 ).send( user );
-
-        }
+        req.user.remove();
+        resp.status( 200 ).send( req.user );
 
     } catch ( e ) {
 
