@@ -21,11 +21,41 @@ router.post( '/tasks', auth, async (req, resp) => {
 
 });
 
+// GET /tasks/?completed=true
+// GET /tasks/?limit=10&skip=0 // First 10 entries
+// GET /tasks/?limit=10&skip=1 // Next 10 entries
+// GET /tasks/?sortBy=createAt:asc // ascending order
+// GET /tasks/?sortBy=createAt:des // descending order
+
 router.get( '/tasks', auth, async (req, resp) => {
 
     try {
 
-        await req.user.populate('tasks').execPopulate();
+        const match = {};
+        const options = {};
+
+        if ( req.query.completed !== undefined )
+            match.completed = req.query.completed === 'true' ? true : false ;
+
+        if ( req.query.limit !== undefined ) {
+
+            options.limit = parseInt(req.query.limit);
+            options.skip = req.query.skip !== undefined ? parseInt( req.query.skip ) : 0;
+
+        }
+
+        if ( req.query.sortBy !== undefined ) {
+
+            const sort = {};
+            const parts = req.query.sortBy.split( ':' );
+
+            sort[ parts[ 0 ] ] = parts[ 1 ] === 'desc' ? -1 : 1 ;
+
+            options.sort = sort;
+
+        }
+
+        await req.user.populate( { path: 'tasks', match, options } ).execPopulate();
         resp.status( 200 ).send( req.user.tasks );
 
     } catch ( e ) {
